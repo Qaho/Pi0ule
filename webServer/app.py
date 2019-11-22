@@ -16,11 +16,9 @@ GPIO_END_CYCLE_OPENING = 6
 insideDoor = Door("Porte intérieure", GPIO_RUN_DOOR, GPIO_DOOR_WAY, GPIO_END_CYCLE_OPENING, GPIO_END_CYCLE_CLOSING)
 doors = [insideDoor]
 
-# init time control
-timeControl = TimeControl()
-
 # init chicken coop
-chickenCoop = ChickenCoop(timeControl, doors)
+chickenCoop = ChickenCoop(doors)
+chickenCoop.start()
 
 @app.route('/')
 def index():
@@ -30,8 +28,8 @@ def index():
 		'doorClosed' : insideDoor.isClosed,
 		'doorOpening' : insideDoor.isOpening,
 		'doorClosing' : insideDoor.isClosing,
-		'openingTime' : timeControl.openingTime,
-		'closingTime' : timeControl.closingTime,
+		'openingTime' : chickenCoop.openingTime,
+		'closingTime' : chickenCoop.closingTime,
 	}  
 	return render_template('index.html', **templateData)
 
@@ -53,11 +51,13 @@ def post():
 	result = "No id found for " + content['id']
 	
 	if content['id'] == "openingTime":
-		timeControl.openingTime = content['value']
-		result = "Opening time set with " + timeControl.openingTime
+		chickenCoop.openingTime = content['value']
+		result = "Opening time set with " + chickenCoop.openingTime
+		chickenCoop.setupOpeningTime()
+		
 	if content['id'] == "closingTime":
-		timeControl.closingTime = content['value']
-		result = "Closing time set with " + timeControl.closingTime
+		chickenCoop.closingTime = content['value']
+		result = "Closing time set with " + chickenCoop.closingTime
 		
 	return result
 
@@ -73,8 +73,8 @@ def action(action):
 		'doorClosed' : insideDoor.isClosed,
 		'doorOpening' : insideDoor.isOpening,
 		'doorClosing' : insideDoor.isClosing,
-		'openingTime' : timeControl.openingTime,
-		'closingTime' : timeControl.closingTime,
+		'openingTime' : chickenCoop.openingTime,
+		'closingTime' : chickenCoop.closingTime,
 	}  
 	return render_template('index.html', **templateData)
 	

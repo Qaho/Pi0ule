@@ -1,3 +1,4 @@
+
 from dataclasses import dataclass
 from dataclasses_json import dataclass_json
 
@@ -11,6 +12,9 @@ class TimeControl:
 
     def __init__(self):
         """Init"""
-
-        self.openingTime = "6:00"
+        self.openingTime = "22:53"
         self.closingTime = "19:00"
+    
+
+
+
