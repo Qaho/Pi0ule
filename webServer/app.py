@@ -2,6 +2,7 @@ import json
 from flask import Flask, render_template, request
 from classes.door import Door
 from classes.timecontrol import TimeControl
+from classes.chickencoop import ChickenCoop
 
 app = Flask(__name__)
 
@@ -12,7 +13,7 @@ GPIO_END_CYCLE_CLOSING = 5
 GPIO_END_CYCLE_OPENING = 6
 
 # init doors
-insideDoor = Door(GPIO_RUN_DOOR, GPIO_DOOR_WAY, GPIO_END_CYCLE_OPENING, GPIO_END_CYCLE_CLOSING)
+insideDoor = Door("Porte intérieure", GPIO_RUN_DOOR, GPIO_DOOR_WAY, GPIO_END_CYCLE_OPENING, GPIO_END_CYCLE_CLOSING)
 doors = [insideDoor]
 
 # init time control
@@ -29,10 +30,17 @@ def index():
 		'doorClosed' : insideDoor.isClosed,
 		'doorOpening' : insideDoor.isOpening,
 		'doorClosing' : insideDoor.isClosing,
-		'openingTime' : insideDoor.openingTime,
-		'closingTime' : insideDoor.closingTime,
+		'openingTime' : timeControl.openingTime,
+		'closingTime' : timeControl.closingTime,
 	}  
 	return render_template('index.html', **templateData)
+
+@app.route('/getdata')
+def getdata():
+	jsonString = chickenCoop.to_json()
+	print(jsonString)
+		
+	return jsonString
 
 @app.route('/postjson', methods=['POST'])
 def post():
@@ -45,11 +53,11 @@ def post():
 	result = "No id found for " + content['id']
 	
 	if content['id'] == "openingTime":
-		insideDoor.openingTime = content['value']
-		result = "Opening time set with " + insideDoor.openingTime
+		timeControl.openingTime = content['value']
+		result = "Opening time set with " + timeControl.openingTime
 	if content['id'] == "closingTime":
-		insideDoor.closingTime = content['value']
-		result = "Closing time set with " + insideDoor.closingTime
+		timeControl.closingTime = content['value']
+		result = "Closing time set with " + timeControl.closingTime
 		
 	return result
 
@@ -65,8 +73,8 @@ def action(action):
 		'doorClosed' : insideDoor.isClosed,
 		'doorOpening' : insideDoor.isOpening,
 		'doorClosing' : insideDoor.isClosing,
-		'openingTime' : door.openingTime,
-		'closingTime' : door.closingTime,
+		'openingTime' : timeControl.openingTime,
+		'closingTime' : timeControl.closingTime,
 	}  
 	return render_template('index.html', **templateData)
 	

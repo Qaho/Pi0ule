@@ -1,10 +1,25 @@
 import RPi.GPIO as GPIO
+from dataclasses import dataclass
+from dataclasses_json import dataclass_json
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 
+@dataclass_json
+@dataclass
 class Door:
     """Door object"""
+    name: str
+
+    isOpened: bool
+    isClosed: bool
+    isOpening: bool
+    isClosing: bool
+
+    gpioIsOpened: int
+    gpioIsClosed: int
+    gpioOpenCloseWay:int
+    gpioRun:int
 
     def __init__(self, name, gpioRun, gpioOpenCloseWay, gpioIsOpened, gpioIsClosed):
         """Init"""
