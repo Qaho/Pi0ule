@@ -6,6 +6,9 @@ from dataclasses_json import dataclass_json
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 
+GPIO_LEVEL_CLOSE = GPIO.HIGH
+GPIO_LEVEL_OPEN = GPIO.LOW
+
 @dataclass_json
 @dataclass
 class Door:
@@ -52,5 +55,43 @@ class Door:
 
     def open(self):
         self.logger.info('Opening door "' + self.name + '"...')
+
+        # basculer moteur
+        GPIO.output(self.gpioOpenCloseWay, GPIO_LEVEL_OPEN)
+
+        # lancer ouverture
+        GPIO.output(self.gpioRun , GPIO.HIGH)
+
+        # attendre timeout
+        channel = GPIO.wait_for_edge(self.gpioIsOpened, GPIO.RISING, timeout = self.timeoutOpening * 1000)
+
+        # stopper ouverture 
+        GPIO.output(self.gpioRun, GPIO.LOW)
+
+        if channel is None:
+            self.logger.error('Opening door timed out!')
+        else:
+            self.logger.info('Door opened')
+
+    def close(self):
+        self.logger.info('Closing door "' + self.name + '"...')
+
+        # basculer moteur
+        GPIO.output(self.gpioOpenCloseWay, GPIO_LEVEL_CLOSE)
+
+        # lancer fermeture
+        GPIO.output(self.gpioRun , GPIO.HIGH)
+
+        # attendre timeout
+        channel = GPIO.wait_for_edge(self.gpioIsClosed, GPIO.RISING, timeout = self.timeoutClosing * 1000)
+
+        # stopper fermeture 
+        GPIO.output(self.gpioRun, GPIO.LOW)
+
+        if channel is None:
+            self.logger.error('Closing door timed out!')
+        else:
+            self.logger.info('Door closed')
+
 
         
