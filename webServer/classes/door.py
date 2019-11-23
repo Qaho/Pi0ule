@@ -21,6 +21,9 @@ class Door:
     gpioOpenCloseWay:int
     gpioRun:int
 
+    timeoutOpening: int
+    timeoutClosing: int
+
     def __init__(self, name, gpioRun, gpioOpenCloseWay, gpioIsOpened, gpioIsClosed):
         """Init"""
         # init GPIOs
@@ -40,5 +43,11 @@ class Door:
         self.gpioIsClosed = gpioIsClosed
         self.gpioOpenCloseWay = gpioOpenCloseWay
         self.gpioRun = gpioRun
+
+        self.timeoutOpening = 10
+        self.timeoutClosing = 10
+
+    def open(self):
+        print('Opening door "' + self.name + '"...')
 
         

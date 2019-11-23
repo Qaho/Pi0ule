@@ -1,10 +1,25 @@
 import json
+import logging
 from flask import Flask, render_template, request
 from classes.door import Door
-from classes.timecontrol import TimeControl
 from classes.chickencoop import ChickenCoop
+from datetime import datetime
 
 app = Flask(__name__)
+global logger
+
+# init logger
+logFormat='[%(levelname)s] %(asctime)s: %(message)s'
+logDateFormat='%d/%m/%Y %H:%M:%S'
+logger = logging.getLogger('chickencoop')
+logging.basicConfig(format=logFormat, datefmt=logDateFormat, filename='./logs/'+datetime.now().strftime("%d_%m_%Y - %H:%M:%S")+'.log',level=logging.DEBUG)
+
+# init console logger
+consoleLogger = logging.StreamHandler()
+consoleLogger.setLevel(logging.DEBUG)
+formatter = logging.Formatter(logFormat, datefmt=logDateFormat)
+consoleLogger.setFormatter(formatter)
+logger.addHandler(consoleLogger)
 
 # def GPIO insideDoor
 GPIO_RUN_DOOR = 4
@@ -13,7 +28,7 @@ GPIO_END_CYCLE_CLOSING = 5
 GPIO_END_CYCLE_OPENING = 6
 
 # init doors
-insideDoor = Door("Porte intérieure", GPIO_RUN_DOOR, GPIO_DOOR_WAY, GPIO_END_CYCLE_OPENING, GPIO_END_CYCLE_CLOSING)
+insideDoor = Door("Porte interieure", GPIO_RUN_DOOR, GPIO_DOOR_WAY, GPIO_END_CYCLE_OPENING, GPIO_END_CYCLE_CLOSING)
 doors = [insideDoor]
 
 # init chicken coop
