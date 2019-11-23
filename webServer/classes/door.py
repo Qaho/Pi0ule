@@ -2,6 +2,7 @@ import RPi.GPIO as GPIO
 import logging
 from dataclasses import dataclass
 from dataclasses_json import dataclass_json
+from enum import Enum
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
@@ -9,16 +10,23 @@ GPIO.setwarnings(False)
 GPIO_LEVEL_CLOSE = GPIO.HIGH
 GPIO_LEVEL_OPEN = GPIO.LOW
 
+class Status(Enum):
+        OPENED = "OPENED"
+        OPENING = "OPENING"
+        OPENING_ERROR = "OPENING_ERROR"
+        CLOSED = "CLOSED"
+        CLOSING = "CLOSING"
+        CLOSING_ERROR = "CLOSING_ERROR"
+        UNKNOWN = "UNKNOWN"
+
 @dataclass_json
 @dataclass
 class Door:
-    """Door object"""
+
     name: str
 
     isOpened: bool
     isClosed: bool
-    isOpening: bool
-    isClosing: bool
 
     gpioIsOpened: int
     gpioIsClosed: int
@@ -27,6 +35,8 @@ class Door:
 
     timeoutOpening: int
     timeoutClosing: int
+
+    status: Status
 
     def __init__(self, name, gpioRun, gpioOpenCloseWay, gpioIsOpened, gpioIsClosed):
         """Init"""
@@ -40,8 +50,6 @@ class Door:
 
         self.isOpened = GPIO.input(gpioIsOpened)
         self.isClosed = GPIO.input(gpioIsClosed)
-        self.isOpening = False
-        self.isClosing = False
         
         self.gpioIsOpened = gpioIsOpened
         self.gpioIsClosed = gpioIsClosed
@@ -51,47 +59,75 @@ class Door:
         self.timeoutOpening = 10
         self.timeoutClosing = 10
 
+        self.status = Status.UNKNOWN
+
+        if(self.isOpened):
+            self.status = Status.OPENED
+        elif (self.isClosed):
+            self.status = Status.CLOSED
+
         self.logger = logging.getLogger('chickencoop')
 
     def open(self):
-        self.logger.info('Opening door "' + self.name + '"...')
 
-        # basculer moteur
-        GPIO.output(self.gpioOpenCloseWay, GPIO_LEVEL_OPEN)
-
-        # lancer ouverture
-        GPIO.output(self.gpioRun , GPIO.HIGH)
-
-        # attendre timeout
-        channel = GPIO.wait_for_edge(self.gpioIsOpened, GPIO.RISING, timeout = self.timeoutOpening * 1000)
-
-        # stopper ouverture 
-        GPIO.output(self.gpioRun, GPIO.LOW)
-
-        if channel is None:
-            self.logger.error('Opening door timed out!')
+        if(self.status == Status.OPENED):
+            self.logger.info('Door already opened')
+        elif(self.status == Status.OPENING):
+            self.logger.info('Door already opening')
         else:
-            self.logger.info('Door opened')
+            self.logger.info('Opening door "' + self.name + '"...')
+
+            self.status = Status.OPENING
+
+            # basculer moteur
+            GPIO.output(self.gpioOpenCloseWay, GPIO_LEVEL_OPEN)
+
+            # lancer ouverture
+            GPIO.output(self.gpioRun , GPIO.HIGH)
+
+            # attendre timeout
+            channel = GPIO.wait_for_edge(self.gpioIsOpened, GPIO.RISING, timeout = self.timeoutOpening * 1000)
+
+            # stopper ouverture 
+            GPIO.output(self.gpioRun, GPIO.LOW)
+
+            if channel is None:
+                self.logger.error('Opening door timed out!')
+                self.status = Status.OPENING_ERROR
+            else:
+                self.logger.info('Door opened')
+                self.status = Status.OPENED
 
     def close(self):
-        self.logger.info('Closing door "' + self.name + '"...')
 
-        # basculer moteur
-        GPIO.output(self.gpioOpenCloseWay, GPIO_LEVEL_CLOSE)
-
-        # lancer fermeture
-        GPIO.output(self.gpioRun , GPIO.HIGH)
-
-        # attendre timeout
-        channel = GPIO.wait_for_edge(self.gpioIsClosed, GPIO.RISING, timeout = self.timeoutClosing * 1000)
-
-        # stopper fermeture 
-        GPIO.output(self.gpioRun, GPIO.LOW)
-
-        if channel is None:
-            self.logger.error('Closing door timed out!')
+        if(self.status == Status.CLOSED):
+            self.logger.info('Door already closed')
+        elif(self.status == Status.CLOSING):
+            self.logger.info('Door already closing')
         else:
-            self.logger.info('Door closed')
+            self.logger.info('Closing door "' + self.name + '"...')
+            self.status = Status.CLOSING
+
+            # basculer moteur
+            GPIO.output(self.gpioOpenCloseWay, GPIO_LEVEL_CLOSE)
+
+            # lancer fermeture
+            GPIO.output(self.gpioRun , GPIO.HIGH)
+
+            # attendre timeout
+            channel = GPIO.wait_for_edge(self.gpioIsClosed, GPIO.RISING, timeout = self.timeoutClosing * 1000)
+
+            # stopper fermeture 
+            GPIO.output(self.gpioRun, GPIO.LOW)
+
+            if channel is None:
+                self.logger.error('Closing door timed out!')
+                self.status = Status.CLOSING_ERROR
+            else:
+                self.logger.info('Door closed')
+                self.status = Status.CLOSED
+
+    
 
 
         

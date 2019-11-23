@@ -31,16 +31,15 @@ class ChickenCoop(Thread):
     def __eq__(self, other): return self is other
     def __hash__(self): return hash(id(self))
 
+    def __setattr__(self, id, val):
+        object.__setattr__(self, id, val)
 
-    def setupOpeningTime(self):
-        schedule.clear('opening')
-        schedule.every().day.at(self.openingTime).do(self.run_threaded, self.job).tag('opening')
-
-
-    def setupClosingTime(self):
-        schedule.clear('closing')
-        schedule.every().day.at(self.closingTime).do(self.run_threaded, self.job).tag('closing')
-    
+        if(id == "openingTime"):
+            schedule.clear('opening')
+            schedule.every().day.at(self.openingTime).do(self.run_threaded, self.job).tag('opening')
+        elif(id == "closingTime"):
+            schedule.clear('closing')
+            schedule.every().day.at(self.closingTime).do(self.run_threaded, self.job).tag('closing')
 
     def run_threaded(self, job_func):
 

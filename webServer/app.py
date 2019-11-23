@@ -3,6 +3,7 @@ import logging
 from flask import Flask, render_template, request
 from classes.door import Door
 from classes.chickencoop import ChickenCoop
+from classes.network.response import Response, Status
 from datetime import datetime
 
 app = Flask(__name__)
@@ -39,10 +40,7 @@ chickenCoop.start()
 def index():
 
 	templateData = {
-		'doorOpened' : insideDoor.isOpened,
-		'doorClosed' : insideDoor.isClosed,
-		'doorOpening' : insideDoor.isOpening,
-		'doorClosing' : insideDoor.isClosing,
+		'doorStatus' : insideDoor.status,
 		'openingTime' : chickenCoop.openingTime,
 		'closingTime' : chickenCoop.closingTime,
 	}  
@@ -58,23 +56,23 @@ def getdata():
 @app.route('/postjson', methods=['POST'])
 def post():
 	logger.info("json received")
-	logger.info(request.is_json)
 	content = request.get_json()
-	logger.info(content['id'])
-	logger.info(content['value'])
 	
-	result = "No id found for " + content['id']
+	response = Response(Status.ERROR, "")
 	
 	if content['id'] == "openingTime":
+		response.status = Status.OK
 		chickenCoop.openingTime = content['value']
-		result = "Opening time set with " + chickenCoop.openingTime
-		chickenCoop.setupOpeningTime()
+		logger.info("Opening time set to: " + chickenCoop.openingTime)
 		
 	if content['id'] == "closingTime":
+		response.status = Status.OK
 		chickenCoop.closingTime = content['value']
-		result = "Closing time set with " + chickenCoop.closingTime
+		logger.info("Opening time set to: " + chickenCoop.closingTime)
+
+	response.data = chickenCoop.to_json()
 		
-	return result
+	return response.to_json()
 
 @app.route("/<action>")
 def action(action):
@@ -84,10 +82,7 @@ def action(action):
 		logger.info('Close door')
 	
 	templateData = {
-		'doorOpened' : insideDoor.isOpened,
-		'doorClosed' : insideDoor.isClosed,
-		'doorOpening' : insideDoor.isOpening,
-		'doorClosing' : insideDoor.isClosing,
+		'doorStatus' : insideDoor.status,
 		'openingTime' : chickenCoop.openingTime,
 		'closingTime' : chickenCoop.closingTime,
 	}  
