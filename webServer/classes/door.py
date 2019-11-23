@@ -1,4 +1,5 @@
 import RPi.GPIO as GPIO
+import logging
 from dataclasses import dataclass
 from dataclasses_json import dataclass_json
 
@@ -47,7 +48,9 @@ class Door:
         self.timeoutOpening = 10
         self.timeoutClosing = 10
 
+        self.logger = logging.getLogger('chickencoop')
+
     def open(self):
-        print('Opening door "' + self.name + '"...')
+        self.logger.info('Opening door "' + self.name + '"...')
 
         

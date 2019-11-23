@@ -51,17 +51,17 @@ def index():
 @app.route('/getdata')
 def getdata():
 	jsonString = chickenCoop.to_json()
-	print(jsonString)
+	logger.info(jsonString)
 		
 	return jsonString
 
 @app.route('/postjson', methods=['POST'])
 def post():
-	print("json received")
-	print(request.is_json)
+	logger.info("json received")
+	logger.info(request.is_json)
 	content = request.get_json()
-	print(content['id'])
-	print(content['value'])
+	logger.info(content['id'])
+	logger.info(content['value'])
 	
 	result = "No id found for " + content['id']
 	
@@ -79,9 +79,9 @@ def post():
 @app.route("/<action>")
 def action(action):
 	if action == "open":
-		print('Open door')
+		logger.info('Open door')
 	if action == "close":
-		print('Close door')
+		logger.info('Close door')
 	
 	templateData = {
 		'doorOpened' : insideDoor.isOpened,

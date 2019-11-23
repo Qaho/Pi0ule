@@ -1,6 +1,7 @@
 import schedule
 import time
 import threading
+import logging
 from threading import Thread
 
 from classes.door import Door
@@ -23,6 +24,8 @@ class ChickenCoop(Thread):
         self.doors = doors
         self.openingTime = "06:00"
         self.closingTime = "19:00"
+
+        self.logger = logging.getLogger('chickencoop')
 
 
     def __eq__(self, other): return self is other
@@ -47,7 +50,7 @@ class ChickenCoop(Thread):
 
 
     def job(self):
-        print("I'm working...")
+        self.logger.info("I'm working...")
         return
 
 
