@@ -39,12 +39,7 @@ chickenCoop.start()
 @app.route('/')
 def index():
 
-	templateData = {
-		'doorStatus' : insideDoor.status,
-		'openingTime' : chickenCoop.openingTime,
-		'closingTime' : chickenCoop.closingTime,
-	}  
-	return render_template('index.html', **templateData)
+	return render_template('index.html', doors=doors, chickenCoop=chickenCoop)
 
 @app.route('/getdata')
 def getdata():
@@ -54,8 +49,8 @@ def getdata():
 	return jsonString
 
 @app.route('/postjson', methods=['POST'])
-def post():
-	logger.info("json received")
+def postjson():
+	logger.info("postjson received: " + request)
 	content = request.get_json()
 	
 	response = Response(Status.ERROR, "")
@@ -74,19 +69,32 @@ def post():
 		
 	return response.to_json()
 
-@app.route("/<action>")
-def action(action):
-	if action == "open":
-		logger.info('Open door')
-	if action == "close":
-		logger.info('Close door')
+@app.route('/setclosingtime', methods=['POST'])
+def setclosingtime():
+	status = False
+	if request.method == 'POST':
+		chickenCoop.closingTime = request.form['closingTime']
+		status = True
+		logger.info("Closing time set to: " + chickenCoop.closingTime)
+
+	return render_template('index.html', doors=doors, chickenCoop=chickenCoop, setClosingTimeStatus=status)
+
+@app.route('/setopeningtime', methods=['POST'])
+def setopeningtime():
+	status = False
+	if request.method == 'POST':
+		chickenCoop.openingTime = request.form['openingTime']
+		status = True
+		logger.info("Opening time set to: " + chickenCoop.openingTime)
+
+	return render_template('index.html', doors=doors, chickenCoop=chickenCoop, setOpeningTimeStatus=status)
+
+@app.route("/<device>/<action>")
+def action(device, action):
+	logger.info("Action " + action + " received for device " + device)
+	chickenCoop.handleDoorAction(device, action)
 	
-	templateData = {
-		'doorStatus' : insideDoor.status,
-		'openingTime' : chickenCoop.openingTime,
-		'closingTime' : chickenCoop.closingTime,
-	}  
-	return render_template('index.html', **templateData)
+	return render_template('index.html', doors=doors, chickenCoop=chickenCoop)
 	
 if __name__ == '__main__':
     app.run(debug=True, port=80, host='0.0.0.0')

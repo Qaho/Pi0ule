@@ -23,6 +23,7 @@ class Status(Enum):
 @dataclass
 class Door:
 
+    id:str
     name: str
 
     isOpened: bool
@@ -47,6 +48,7 @@ class Door:
         GPIO.setup(gpioIsOpened, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 
         self.name = name
+        self.id = name.lower().replace(" ", "")
 
         self.isOpened = GPIO.input(gpioIsOpened)
         self.isClosed = GPIO.input(gpioIsClosed)
