@@ -89,7 +89,7 @@ def setopeningtime():
 
 	return render_template('index.html', doors=doors, chickenCoop=chickenCoop, setOpeningTimeStatus=status)
 
-@app.route("/<device>/<action>")
+@app.route("/<device>/<action>", methods=['POST'])
 def action(device, action):
 	logger.info("Action " + action + " received for device " + device)
 	chickenCoop.handleDoorAction(device, action)

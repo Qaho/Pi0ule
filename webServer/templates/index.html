@@ -1,43 +1,43 @@
 <!DOCTYPE html>
    <head>
-      <title>Pi0ule</title>
+      <title>Pi0ulailler</title>
    </head>
    <body>
-		<h1>Pi0ule control</h1>
-		
+		<h1>Pi0ulailler control</h1>
+
 		<table>
-			{% for d in doors %}
-			<tr>
-				<th colspan="3">{{ d.name }}</th>
-			</tr>
-			<tr>
-				<td>Status</td>
-				<td>{{ d.status }}</td>
-			</tr>
 			<tr>
 				<td>Opening time</td>
 				<td>
-					<form action="setopeningtime" method="POST">
+					<form action="/setopeningtime" method="POST">
 						<input {% if setOpeningTimeStatus is defined and not setOpeningTimeStatus %}class="statuserror" {% elif setOpeningTimeStatus is defined %}class="statusok" {% endif %}name="openingTime" type="time" value="{{ chickenCoop.openingTime }}"/>
 						<input type="submit" value="OK"/>
-					</form>
-				</td>
-				<td>
-					<form action="{{ d.id }}/open">
-						<input type="submit" name="open" value="Open" />
 					</form>
 				</td>
 			</tr>
 			<tr>
 				<td>Closing time</td>
 				<td>
-					<form action="setclosingtime" method="POST">
+					<form action="/setclosingtime" method="POST">
 						<input {% if setClosingTimeStatus is defined and not setClosingTimeStatus %}class="statuserror" {% elif setClosingTimeStatus is defined %}class="statusok" {% endif %}name="closingTime" type="time" value="{{ chickenCoop.closingTime }}"/>
 						<input type="submit" value="OK"/>
 					</form>
 				</td>
+			</tr>
+		</table>
+		
+		<table>
+			{% for d in doors %}
+			<tr>
+				<td>{{ d.name }}</td>
+				<td>{{ d.status }}</td>
 				<td>
-					<form action="{{ d.id }}/close">
+					<form action="/{{ d.id }}/open" method="POST">
+						<input type="submit" name="open" value="Open" />
+					</form>
+				</td>
+				<td>
+					<form action="/{{ d.id }}/close" method="POST">
 						<input type="submit" name="close" value="Close" />
 					</form>
 				</td>
