@@ -52,6 +52,9 @@ class ChickenCoop(Thread):
                 elif action == 'close':
                     job_thread = threading.Thread(target=d.close())
                     job_thread.start()
+                elif action == 'stop':
+                    job_thread = threading.Thread(target=d.stop())
+                    job_thread.start()
 
     def handleDoorAction(self, doorid, action):
     	
@@ -68,6 +71,8 @@ class ChickenCoop(Thread):
                 self.run_threaded('open', deviceFound.id)
             if action == "close":
                 self.run_threaded('close', deviceFound.id)
+            if action == "stop":
+                self.run_threaded('stop', deviceFound.id)
 
     def run(self):
         while True:

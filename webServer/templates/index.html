@@ -41,6 +41,11 @@
 						<input type="submit" name="close" value="Close" />
 					</form>
 				</td>
+				<td>
+					<form action="/{{ d.id }}/stop" method="POST">
+						<input type="submit" name="stop" value="Stop" />
+					</form>
+				</td>
 			</tr>
 			{% endfor %}
 		</table>

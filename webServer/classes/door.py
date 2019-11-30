@@ -1,6 +1,8 @@
 import RPi.GPIO as GPIO
 import logging
+import time
 from dataclasses import dataclass
+from datetime import datetime
 from dataclasses_json import dataclass_json
 from enum import Enum
 
@@ -87,13 +89,27 @@ class Door:
             # lancer ouverture
             GPIO.output(self.gpioRun , GPIO.HIGH)
 
-            # attendre timeout
-            channel = GPIO.wait_for_edge(self.gpioIsOpened, GPIO.RISING, timeout = self.timeoutOpening * 1000)
+            isEndOfCycle = False
+            startDateTime = datetime.now()
+            isTimeout = False
+
+            # tant que pas timeout & pas fin de course
+            while(not isEndOfCycle and not isTimeout):
+               # verifier timeout
+               now = datetime.now()
+               delay = (now - startDateTime).total_seconds()
+               isTimeout = delay > self.timeoutOpening
+               
+               # verifier fin de course
+               isEndOfCycle = GPIO.input(self.gpioIsOpened) == GPIO.HIGH
+               
+               # pause
+               time.sleep(0.1)
 
             # stopper ouverture 
             GPIO.output(self.gpioRun, GPIO.LOW)
 
-            if channel is None:
+            if not isEndOfCycle:
                 self.logger.error('Opening door timed out!')
                 self.status = Status.OPENING_ERROR
             else:
@@ -116,18 +132,45 @@ class Door:
             # lancer fermeture
             GPIO.output(self.gpioRun , GPIO.HIGH)
 
-            # attendre timeout
-            channel = GPIO.wait_for_edge(self.gpioIsClosed, GPIO.RISING, timeout = self.timeoutClosing * 1000)
+            isEndOfCycle = False
+            startDateTime = datetime.now()
+            isTimeout = False
+
+            # tant que pas timeout & pas fin de course
+            while(not isEndOfCycle and not isTimeout):
+               # verifier timeout
+               now = datetime.now()
+               delay = (now - startDateTime).total_seconds()
+               isTimeout = delay > self.timeoutClosing
+               
+               # verifier fin de course
+               isEndOfCycle = GPIO.input(self.gpioIsClosed) == GPIO.HIGH
+               
+               # pause
+               time.sleep(0.1)
 
             # stopper fermeture 
             GPIO.output(self.gpioRun, GPIO.LOW)
 
-            if channel is None:
+            if not isEndOfCycle:
                 self.logger.error('Closing door timed out!')
                 self.status = Status.CLOSING_ERROR
             else:
                 self.logger.info('Door closed')
                 self.status = Status.CLOSED
+
+    def stop(self):
+
+        if(self.status != Status.CLOSING and self.status != Status.OPENING):
+            self.logger.info('Door already stopped: ' + self.status)
+        else:
+            self.logger.info('Stop door "' + self.name + '"')
+
+            # stopper ouverture 
+            GPIO.output(self.gpioRun, GPIO.LOW)
+
+            self.logger.info('Door stopped')
+            self.status = Status.UNKNOWN
 
     
 
