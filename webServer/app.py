@@ -102,6 +102,13 @@ def action(device, action):
 	chickenCoop.handleDoorAction(device, action)
 	
 	return render_template('index.html', doors=doors, chickenCoop=chickenCoop)
+
+@app.route("/rain/getdata")
+def rain_getdata():
+	jsonString = rainmeter.getData()
+	logger.info(jsonString)
+		
+	return jsonString
 	
 if __name__ == '__main__' and "get_ipython" not in locals():
-    app.run(debug=True, port=80, host='0.0.0.0')	
+    app.run(debug=True, port=80, host='0.0.0.0', use_reloader=False)	
