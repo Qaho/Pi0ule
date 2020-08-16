@@ -26,6 +26,7 @@ class ChickenCoop(Thread):
         self.closingTime = "19:00"
 
         self.logger = logging.getLogger('chickencoop')
+        self.logger.info('Chicken coop started')
 
 
     def __eq__(self, other): return self is other

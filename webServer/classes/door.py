@@ -45,7 +45,7 @@ class Door:
         """Init"""
         # init GPIOs
         GPIO.setup(gpioRun, GPIO.OUT, initial = GPIO.LOW)
-        GPIO.setup(gpioOpenCloseWay, GPIO.OUT, initial = GPIO.HIGH)
+        GPIO.setup(gpioOpenCloseWay, GPIO.OUT, initial = GPIO.LOW)
         GPIO.setup(gpioIsClosed, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
         GPIO.setup(gpioIsOpened, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 
@@ -92,29 +92,39 @@ class Door:
             isEndOfCycle = False
             startDateTime = datetime.now()
             isTimeout = False
+            isStillOpening = True
 
             # tant que pas timeout & pas fin de course
-            while(not isEndOfCycle and not isTimeout):
-               # verifier timeout
-               now = datetime.now()
-               delay = (now - startDateTime).total_seconds()
-               isTimeout = delay > self.timeoutOpening
-               
-               # verifier fin de course
-               isEndOfCycle = GPIO.input(self.gpioIsOpened) == GPIO.HIGH
-               
-               # pause
-               time.sleep(0.1)
+            while(not isEndOfCycle and not isTimeout and isStillOpening):
+                # verifier timeout
+                now = datetime.now()
+                delay = (now - startDateTime).total_seconds()
+                isTimeout = delay > self.timeoutOpening
+
+                # verifier fin de course
+                isEndOfCycle = GPIO.input(self.gpioIsOpened) == GPIO.HIGH
+
+                # verifier qu'on est toujours en train d'ouvrir
+                isStillOpening = self.status == Status.OPENING
+
+                # pause
+                time.sleep(0.1)
 
             # stopper ouverture 
             GPIO.output(self.gpioRun, GPIO.LOW)
 
+            #reinit bascule moteur
+            if GPIO_LEVEL_OPEN == GPIO.HIGH:
+                GPIO.output(self.gpioOpenCloseWay, GPIO.LOW)
+
             if not isEndOfCycle:
                 self.logger.error('Opening door timed out!')
                 self.status = Status.OPENING_ERROR
-            else:
+            elif not isTimeout:
                 self.logger.info('Door opened')
                 self.status = Status.OPENED
+            else: 
+                self.logger.info('Door opening cancelled')
 
     def close(self):
 
@@ -135,34 +145,44 @@ class Door:
             isEndOfCycle = False
             startDateTime = datetime.now()
             isTimeout = False
+            isStillClosing = True
 
             # tant que pas timeout & pas fin de course
-            while(not isEndOfCycle and not isTimeout):
-               # verifier timeout
-               now = datetime.now()
-               delay = (now - startDateTime).total_seconds()
-               isTimeout = delay > self.timeoutClosing
-               
-               # verifier fin de course
-               isEndOfCycle = GPIO.input(self.gpioIsClosed) == GPIO.HIGH
-               
-               # pause
-               time.sleep(0.1)
+            while(not isEndOfCycle and not isTimeout and isStillClosing):
+                # verifier timeout
+                now = datetime.now()
+                delay = (now - startDateTime).total_seconds()
+                isTimeout = delay > self.timeoutClosing
+
+                # verifier fin de course
+                isEndOfCycle = GPIO.input(self.gpioIsClosed) == GPIO.HIGH
+
+                # verifier qu'on est toujours en train de fermer
+                isStillClosing = self.status == Status.CLOSING
+
+                # pause
+                time.sleep(0.1)
 
             # stopper fermeture 
             GPIO.output(self.gpioRun, GPIO.LOW)
 
+            #reinit bascule moteur
+            if GPIO_LEVEL_CLOSE == GPIO.HIGH:
+                GPIO.output(self.gpioOpenCloseWay, GPIO.LOW)
+
             if not isEndOfCycle:
                 self.logger.error('Closing door timed out!')
                 self.status = Status.CLOSING_ERROR
-            else:
+            elif not isTimeout:
                 self.logger.info('Door closed')
                 self.status = Status.CLOSED
+            else: 
+                self.logger.info('Door closing cancelled')
 
     def stop(self):
 
         if(self.status != Status.CLOSING and self.status != Status.OPENING):
-            self.logger.info('Door already stopped: ' + self.status)
+            self.logger.info('Door already stopped: ' + self.status.value)
         else:
             self.logger.info('Stop door "' + self.name + '"')
 

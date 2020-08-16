@@ -3,6 +3,7 @@ import logging
 from flask import Flask, render_template, request
 from classes.door import Door
 from classes.chickencoop import ChickenCoop
+from classes.rainmeter import Rainmeter
 from classes.network.response import Response, Status
 from datetime import datetime
 
@@ -13,7 +14,7 @@ global logger
 logFormat='[%(levelname)s] %(asctime)s: %(message)s'
 logDateFormat='%d/%m/%Y %H:%M:%S'
 logger = logging.getLogger('chickencoop')
-logging.basicConfig(format=logFormat, datefmt=logDateFormat, filename='./logs/'+datetime.now().strftime("%d_%m_%Y - %H:%M:%S")+'.log',level=logging.DEBUG)
+logging.basicConfig(format=logFormat, datefmt=logDateFormat, filename='/home/pi/webServer/logs/'+datetime.now().strftime("%d_%m_%Y - %H:%M:%S")+'.log',level=logging.DEBUG)
 
 # init console logger
 consoleLogger = logging.StreamHandler()
@@ -28,13 +29,19 @@ GPIO_DOOR_WAY = 17
 GPIO_END_CYCLE_CLOSING = 5
 GPIO_END_CYCLE_OPENING = 6
 
+# def GPIO rainmeter
+GPIO_RAINMETER = 13
+
 # init doors
 insideDoor = Door("Porte interieure", GPIO_RUN_DOOR, GPIO_DOOR_WAY, GPIO_END_CYCLE_OPENING, GPIO_END_CYCLE_CLOSING)
 doors = [insideDoor]
 
-# init chicken coop
+# init threads
 chickenCoop = ChickenCoop(doors)
 chickenCoop.start()
+
+rainmeter = Rainmeter(GPIO_RAINMETER)
+rainmeter.start()
 
 @app.route('/')
 def index():
@@ -96,5 +103,5 @@ def action(device, action):
 	
 	return render_template('index.html', doors=doors, chickenCoop=chickenCoop)
 	
-if __name__ == '__main__':
-    app.run(debug=True, port=80, host='0.0.0.0')
+if __name__ == '__main__' and "get_ipython" not in locals():
+    app.run(debug=True, port=80, host='0.0.0.0')	
