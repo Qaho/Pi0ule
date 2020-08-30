@@ -26,7 +26,7 @@ class Rainmeter(Thread):
 
         self.logger = logging.getLogger('chickencoop')
         schedule.clear('rainmeter')
-        schedule.every().day.at("22:50").do(self.run_action, 'init').tag('init')
+        schedule.every().day.at("00:00").do(self.run_action, 'init').tag('init')
         # schedule.every().day.at("00:00").do(self.run_action, 'init').tag('init')
         self.logger.info('Rainmeter initialized')
 
