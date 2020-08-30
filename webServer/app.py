@@ -74,7 +74,14 @@ def postjson():
 		response.status = Status.OK
 		chickenCoop.closingTime = content['value']
 		logger.info("Opening time set to: " + chickenCoop.closingTime)
-
+	
+	if content['id'] == "doorControl":
+		device = content['device']
+		action = content['action']
+		logger.info("Action " + action + " received for device " + device)
+		chickenCoop.handleDoorAction(device, action)
+		response.status = Status.OK
+	
 	response.data = chickenCoop.to_json()
 		
 	return response.to_json()
