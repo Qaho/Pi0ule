@@ -45,17 +45,20 @@ rainmeter.start()
 
 @app.route('/')
 def index():
-
 	return render_template('index.html', doors=doors, chickenCoop=chickenCoop)
 
-@app.route('/getdata')
+@app.route('/chicken/')
+def chicken():
+	return render_template('index.html', doors=doors, chickenCoop=chickenCoop)
+
+@app.route('/chicken/getdata')
 def getdata():
 	jsonString = chickenCoop.to_json()
 	logger.info(jsonString)
 		
 	return jsonString
 
-@app.route('/postjson', methods=['POST'])
+@app.route('/chicken/postjson', methods=['POST'])
 def postjson():
 	logger.info("postjson received: " + request)
 	content = request.get_json()
@@ -76,7 +79,7 @@ def postjson():
 		
 	return response.to_json()
 
-@app.route('/setclosingtime', methods=['POST'])
+@app.route('/chicken/setclosingtime', methods=['POST'])
 def setclosingtime():
 	status = False
 	if request.method == 'POST':
@@ -86,7 +89,7 @@ def setclosingtime():
 
 	return render_template('index.html', doors=doors, chickenCoop=chickenCoop, setClosingTimeStatus=status)
 
-@app.route('/setopeningtime', methods=['POST'])
+@app.route('/chicken/setopeningtime', methods=['POST'])
 def setopeningtime():
 	status = False
 	if request.method == 'POST':
@@ -96,7 +99,7 @@ def setopeningtime():
 
 	return render_template('index.html', doors=doors, chickenCoop=chickenCoop, setOpeningTimeStatus=status)
 
-@app.route("/<device>/<action>", methods=['POST'])
+@app.route("/chicken/<device>/<action>", methods=['POST'])
 def action(device, action):
 	logger.info("Action " + action + " received for device " + device)
 	chickenCoop.handleDoorAction(device, action)
