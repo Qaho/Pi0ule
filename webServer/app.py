@@ -60,8 +60,9 @@ def getdata():
 
 @app.route('/chicken/postjson', methods=['POST'])
 def postjson():
-	logger.info("postjson received: " + request)
+	
 	content = request.get_json()
+	logger.info("postjson received: " + json.dumps(content))
 	
 	response = Response(Status.ERROR, "")
 	
