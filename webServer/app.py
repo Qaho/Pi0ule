@@ -83,7 +83,7 @@ def postjson():
 		chickenCoop.handleDoorAction(device, action)
 		response.status = Status.OK
 	
-	response.data = chickenCoop.to_json()
+	response.data = chickenCoop
 		
 	return response.to_json()
 

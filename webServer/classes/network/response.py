@@ -10,7 +10,7 @@ class Status(Enum):
 @dataclass
 class Response():
     status:Status
-    data:str
+    data:object
 
     def __init__(self, status, data):
         self.status = status
